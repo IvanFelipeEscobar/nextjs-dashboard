@@ -3,6 +3,7 @@ import { z } from "zod";
 import { sql } from "@vercel/postgres";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { signIn } from "@/auth"
 const InvoiceSchema = z.object({
   id: z.string(),
   customerId: z.string({invalid_type_error: 'please select a customer'}),
@@ -87,3 +88,14 @@ export const deleteInvoice = async (id: string) => {
     return {message: 'db error, failed to delete'}
   }
 };
+
+export const authenticate = async (
+  prevState: string | undefined,
+  formData: FormData) => {
+    try {
+      await signIn('credentials', Object.fromEntries(formData))
+    } catch (error) {
+      if((error as Error).message.includes('CredentialSignin'))return 'CredentialSignin' 
+      throw error
+    }
+  }
